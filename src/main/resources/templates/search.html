@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BookHub - En Uygun Fiyatlı Kitapları Keşfedin</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --primary-color: #2c3e50;
+            --accent-color: #e74c3c;
+            --gradient-start: #3498db;
+            --gradient-end: #2980b9;
+        }
+
+        body {
+            background-color: #f8f9fa;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+
+        .hero-section {
+            background: linear-gradient(135deg, var(--gradient-start), var(--gradient-end));
+            padding: 4rem 0;
+            color: white;
+            margin-bottom: 2rem;
+        }
+
+        .search-container {
+            max-width: 600px;
+            margin: 0 auto;
+        }
+
+        .search-input {
+            border-radius: 30px;
+            padding: 0.8rem 1.5rem;
+            border: none;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            font-size: 1.1rem;
+        }
+
+        .search-button {
+            border-radius: 30px;
+            padding: 0.8rem 2rem;
+            background-color: var(--accent-color);
+            border: none;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .search-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(231, 76, 60, 0.3);
+            background-color: #c0392b;
+        }
+
+        .book-card {
+            border: none;
+            border-radius: 15px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            background: white;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+
+        .book-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+        }
+
+        .book-image {
+            height: 300px;
+            object-fit: cover;
+        }
+
+        .price-tag {
+            background: linear-gradient(45deg, #ff9966, #ff5e62);
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-weight: 600;
+            display: inline-block;
+            margin: 0.3rem;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.05); }
+            100% { transform: scale(1); }
+        }
+
+        .savings-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background-color: #e74c3c;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 15px;
+            font-weight: bold;
+            z-index: 1;
+        }
+
+        .features-section {
+            padding: 2rem 0;
+            background-color: white;
+            margin: 2rem 0;
+        }
+
+        .feature-item {
+            text-align: center;
+            padding: 1rem;
+        }
+
+        .feature-icon {
+            font-size: 2.5rem;
+            color: var(--accent-color);
+            margin-bottom: 1rem;
+        }
+
+        .no-results {
+            text-align: center;
+            padding: 3rem;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
+        }
+    </style>
+</head>
+<body>
+
+<div class="hero-section">
+    <div class="container">
+        <h1 class="text-center mb-4">📚 HesapKitap'a Hoş Geldiniz</h1>
+        <p class="text-center mb-5">Türkiye'nin en kapsamlı kitap fiyat karşılaştırma platformu</p>
+
+        <div class="search-container">
+            <form th:action="@{/books/search}" method="post" class="d-flex gap-2" accept-charset="UTF-8">
+                <input type="text" name="searchQuery" class="form-control search-input"
+                       placeholder="Kitap adı, yazar veya ISBN ile arama yapın..." required>
+                <button type="submit" class="btn search-button">
+                    <i class="fas fa-search me-2"></i>Ara
+                </button>
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- Özellikler Bölümü -->
+<div class="features-section" th:if="${bookDetails == null}">
+    <div class="container">
+        <div class="row">
+            <div class="col-md-4 feature-item">
+                <i class="fas fa-tags feature-icon"></i>
+                <h4>En Uygun Fiyatlar</h4>
+                <p>Farklı satıcıların fiyatlarını anında karşılaştırın</p>
+            </div>
+            <div class="col-md-4 feature-item">
+                <i class="fas fa-truck feature-icon"></i>
+                <h4>Hızlı Teslimat</h4>
+                <p>Güvenilir satıcılardan hızlı teslimat seçenekleri</p>
+            </div>
+            <div class="col-md-4 feature-item">
+                <i class="fas fa-shield-alt feature-icon"></i>
+                <h4>Güvenli Alışveriş</h4>
+                <p>%100 güvenli ödeme sistemleri</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Kitap Sonuçları -->
+<div class="container">
+    <div class="row" th:if="${bookDetails != null && !bookDetails.isEmpty()}">
+        <div class="col-md-4 mb-4" th:each="book : ${bookDetails}">
+            <div class="book-card card">
+                <div class="savings-badge" th:if="${book.prices != null and book.prices.size() gt 1}">
+                    <span th:text="${'%' + #numbers.formatDecimal(((book.prices[0].price - book.prices[1].price) / book.prices[0].price) * 100, 0, 0) + ' İndirim'}"></span>
+                </div>
+                <img th:src="${book.imageUrl}" class="card-img-top book-image"
+                     alt="Kitap Kapağı" onerror="this.src='https://via.placeholder.com/300x400?text=Kitap+Kapağı'">
+                <div class="card-body">
+                    <h5 class="card-title" th:text="${book.title}"></h5>
+                    <p class="card-text">
+                        <i class="fas fa-user me-2"></i>
+                        <span th:text="${book.author}"></span>
+                    </p>
+                    <p class="card-text">
+                        <i class="fas fa-building me-2"></i>
+                        <span th:text="${book.publisher}"></span>
+                    </p>
+                    <div class="prices mt-3">
+                        <div th:each="price : ${book.prices}">
+                            <a th:href="${price.bookUrl}" target="_blank" style="text-decoration: none;">
+                            <span class="price-tag d-inline-block p-2 mb-2 me-2 bg-light border rounded shadow-sm">
+                                <i class="fas fa-store me-2"></i>
+                                <span th:text="${price.siteName + ': ' + price.price + ' TL'}"></span>
+                            </span>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Sonuç Bulunamadı Mesajı -->
+    <div class="no-results" th:if="${bookDetails != null && bookDetails.isEmpty()}">
+        <i class="fas fa-search fa-3x mb-3 text-muted"></i>
+        <h3>Üzgünüz, aradığınız kitap bulunamadı.</h3>
+        <p class="text-muted">Lütfen farklı anahtar kelimeler ile tekrar deneyin.</p>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
