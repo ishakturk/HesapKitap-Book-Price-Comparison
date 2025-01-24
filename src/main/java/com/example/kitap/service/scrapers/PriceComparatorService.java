@@ -1,8 +1,8 @@
-package com.example.kitap.service;
+package com.example.kitap.service.scrapers;
 
-import com.example.kitap.model.BookDetails;
-import com.example.kitap.model.BookPrice;
-import com.example.kitap.service.api.PriceProvider;
+import com.example.kitap.model.BookDetailsModel;
+import com.example.kitap.model.BookPriceModel;
+import com.example.kitap.service.scrapers.api.PriceProvider;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -25,8 +25,8 @@ public class PriceComparatorService {
         this.priceProviders = priceProviders;
     }
 
-    public List<BookDetails> fetchAndSortPricesBySearchQuery(String searchQuery) {
-        List<BookDetails> bookDetailsList = new ArrayList<>();
+    public List<BookDetailsModel> fetchAndSortPricesBySearchQuery(String searchQuery) {
+        List<BookDetailsModel> bookDetailsList = new ArrayList<>();
 
         // KitapSeç sonuçlarından ISBN'leri al
         List<String[]> searchResults = ((KitapSecService) priceProviders.stream()
@@ -38,7 +38,7 @@ public class PriceComparatorService {
         // Thread pool for parallel processing
         ExecutorService executor = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors());
 
-        List<Future<BookDetails>> futures = new ArrayList<>();
+        List<Future<BookDetailsModel>> futures = new ArrayList<>();
 
         // Her bir ISBN için paralel işlemler
         for (String[] result : searchResults) {
@@ -49,18 +49,18 @@ public class PriceComparatorService {
             String imageUrl = result[5];
 
             // Her kitap için ayrı bir görev oluştur
-            Future<BookDetails> future = executor.submit(() -> {
-                List<BookPrice> prices = fetchPricesFromAllSites(isbn);
-                return new BookDetails(title, author, publisher, prices, imageUrl);
+            Future<BookDetailsModel> future = executor.submit(() -> {
+                List<BookPriceModel> prices = fetchPricesFromAllSites(isbn);
+                return new BookDetailsModel(title, author, publisher, prices, imageUrl, isbn);
             });
 
             futures.add(future);
         }
 
         // Görevlerin tamamlanmasını bekle ve sonuçları topla
-        for (Future<BookDetails> future : futures) {
+        for (Future<BookDetailsModel> future : futures) {
             try {
-                BookDetails bookDetails = future.get();  // Blocking call, waits for result
+                BookDetailsModel bookDetails = future.get();  // Blocking call, waits for result
                 if (bookDetails != null) {
                     bookDetailsList.add(bookDetails);
                 }
@@ -74,23 +74,23 @@ public class PriceComparatorService {
         return bookDetailsList;
     }
 
-    private List<BookPrice> fetchPricesFromAllSites(String isbn) {
-        List<BookPrice> allPrices = new ArrayList<>();
+    private List<BookPriceModel> fetchPricesFromAllSites(String isbn) {
+        List<BookPriceModel> allPrices = new ArrayList<>();
 
         // Thread pool for parallel price fetching
         ExecutorService executor = Executors.newFixedThreadPool(priceProviders.size());
-        List<Future<BookPrice>> futures = new ArrayList<>();
+        List<Future<BookPriceModel>> futures = new ArrayList<>();
 
         // Tüm sağlayıcılar için paralel görevler
         for (PriceProvider provider : priceProviders) {
-            Future<BookPrice> future = executor.submit(() -> provider.fetchPriceByISBN(isbn));
+            Future<BookPriceModel> future = executor.submit(() -> provider.fetchPriceByISBN(isbn));
             futures.add(future);
         }
 
         // Görevlerin sonuçlarını topla
-        for (Future<BookPrice> future : futures) {
+        for (Future<BookPriceModel> future : futures) {
             try {
-                BookPrice price = future.get();
+                BookPriceModel price = future.get();
                 if (price != null) {
                     allPrices.add(price);
                 }
@@ -103,7 +103,7 @@ public class PriceComparatorService {
 
         // Fiyatları küçükten büyüğe sırala
         return allPrices.stream()
-                .sorted(Comparator.comparingDouble(BookPrice::getPrice))
+                .sorted(Comparator.comparingDouble(BookPriceModel::getPrice))
                 .toList();
     }
 
