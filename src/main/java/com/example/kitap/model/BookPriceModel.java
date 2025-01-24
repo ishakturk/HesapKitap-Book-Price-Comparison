@@ -1,11 +1,13 @@
 package com.example.kitap.model;
 
-public class BookPrice {
+public class BookPriceModel {
     private String siteName;
-    private double price;
+    private Double price;
     private String bookUrl;
 
-    public BookPrice(String siteName, double price, String bookUrl) {
+    public BookPriceModel() {}
+
+    public BookPriceModel(String siteName, Double price, String bookUrl) {
         this.siteName = siteName;
         this.price = price;
         this.bookUrl = bookUrl;
@@ -19,11 +21,11 @@ public class BookPrice {
         this.siteName = siteName;
     }
 
-    public double getPrice() {
+    public Double getPrice() {
         return price;
     }
 
-    public void setPrice(double price) {
+    public void setPrice(Double price) {
         this.price = price;
     }
 

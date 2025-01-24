@@ -1,7 +1,7 @@
-package com.example.kitap.service;
+package com.example.kitap.service.scrapers;
 
-import com.example.kitap.model.BookPrice;
-import com.example.kitap.service.api.PriceProvider;
+import com.example.kitap.model.BookPriceModel;
+import com.example.kitap.service.scrapers.api.PriceProvider;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -20,7 +20,7 @@ public class DRService implements PriceProvider {
      * @return A BookPrice object containing site name and price, or null if no price is found.
      */
     @Override
-    public BookPrice fetchPriceByISBN(String isbn) {
+    public BookPriceModel fetchPriceByISBN(String isbn) {
         try {
             // Replace this URL with the actual search URL format for D&R
             String url = "https://www.dr.com.tr/search?q=" + isbn;
@@ -56,7 +56,7 @@ public class DRService implements PriceProvider {
                 return null;
             }
 
-            return new BookPrice("D&R", price, url);
+            return new BookPriceModel("D&R", price, url);
 
         } catch (IOException e) {
             System.err.println("IO Error fetching price from D&R for ISBN " + isbn + ": " + e.getMessage());

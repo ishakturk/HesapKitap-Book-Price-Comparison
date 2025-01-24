@@ -1,7 +1,7 @@
-package com.example.kitap.service;
+package com.example.kitap.service.scrapers;
 
-import com.example.kitap.model.BookPrice;
-import com.example.kitap.service.api.PriceProvider;
+import com.example.kitap.model.BookPriceModel;
+import com.example.kitap.service.scrapers.api.PriceProvider;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
@@ -67,7 +67,7 @@ public class KitapSecService implements PriceProvider {
         return books;
     }
 
-    public BookPrice fetchPriceByISBN(String isbn) {
+    public BookPriceModel fetchPriceByISBN(String isbn) {
         try {
             // Replace this URL with the actual search URL format for D&R
             String url = "https://www.kitapsec.com/Arama/index.php?a=" + isbn;
@@ -82,7 +82,7 @@ public class KitapSecService implements PriceProvider {
 
             String bookUrl = document.select("div.Ks_UrunSatir[itemprop=itemListElement]").first().attr("id");
 
-            return new BookPrice("KitapSeç", price, bookUrl);
+            return new BookPriceModel("KitapSeç", price, bookUrl);
         } catch (Exception e) {
             System.err.println("Error fetching price from KitapSeç: " + e.getMessage());
             return null;
