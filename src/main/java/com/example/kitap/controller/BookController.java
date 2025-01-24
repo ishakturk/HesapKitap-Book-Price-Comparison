@@ -1,9 +1,8 @@
 package com.example.kitap.controller;
 
-import com.example.kitap.model.BookDetails;
-import com.example.kitap.service.PriceComparatorService;
+import com.example.kitap.model.BookDetailsModel;
+import com.example.kitap.service.scrapers.PriceComparatorService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.context.annotation.Bean;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
@@ -30,7 +29,7 @@ public class BookController {
     // Arama işlemi için POST mapping
     @PostMapping("/search")
     public String searchBooks(@RequestParam("searchQuery") String searchQuery, Model model) {
-        List<BookDetails> bookDetails = priceComparatorService.fetchAndSortPricesBySearchQuery(searchQuery);
+        List<BookDetailsModel> bookDetails = priceComparatorService.fetchAndSortPricesBySearchQuery(searchQuery);
 
         if (bookDetails.isEmpty()) {
             model.addAttribute("message", "No books found for '" + searchQuery + "'.");
@@ -39,6 +38,4 @@ public class BookController {
 
         return "search";
     }
-
-
 }
