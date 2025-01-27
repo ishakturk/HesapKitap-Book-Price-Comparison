@@ -70,4 +70,11 @@ public class BookPriceEntity {
     public void setBook(BookDetailsEntity book) {
         this.book = book;
     }
+
+    public String getSiteName() {
+        return siteName;
+    }
+    public void setSiteName(String siteName) {
+        this.siteName = siteName;
+    }
 }
