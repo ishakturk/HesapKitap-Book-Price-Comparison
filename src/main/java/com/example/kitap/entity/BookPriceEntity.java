@@ -20,6 +20,9 @@ public class BookPriceEntity {
     @Column(name = "provider", nullable = false)
     private String provider;
 
+    @Column(name = "site_name",nullable = false)
+    private String siteName;
+
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated = LocalDateTime.now();
 
