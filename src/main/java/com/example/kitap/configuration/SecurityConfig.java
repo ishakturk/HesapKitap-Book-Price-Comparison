@@ -29,8 +29,8 @@ public class SecurityConfig {
                         .requestMatchers("/register", "/register/**").permitAll()
                         .requestMatchers("/", "/books/**", "/register", "/css/**", "/js/**", "/images/**").permitAll()
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        .requestMatchers("/profile/**").hasRole("USER")
-                        .requestMatchers("/wishlist/**").hasRole("USER")
+                        .requestMatchers("/profile/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/wishlist/**").hasAnyRole("USER", "ADMIN")
                         .anyRequest().authenticated()
                 )
                 .formLogin(form -> form
