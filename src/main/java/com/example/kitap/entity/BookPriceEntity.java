@@ -20,6 +20,9 @@ public class BookPriceEntity {
     @Column(name = "provider", nullable = false)
     private String provider;
 
+    @Column(name = "site_name",nullable = false)
+    private String siteName;
+
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated = LocalDateTime.now();
 
@@ -66,5 +69,12 @@ public class BookPriceEntity {
 
     public void setBook(BookDetailsEntity book) {
         this.book = book;
+    }
+
+    public String getSiteName() {
+        return siteName;
+    }
+    public void setSiteName(String siteName) {
+        this.siteName = siteName;
     }
 }

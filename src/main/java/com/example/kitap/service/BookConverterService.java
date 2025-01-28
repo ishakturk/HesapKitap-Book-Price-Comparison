@@ -22,12 +22,13 @@ public class BookConverterService {
         return entity;
     }
 
-    public BookPriceEntity toEntity(BookPriceModel model) {
-        BookPriceEntity entity = new BookPriceEntity();
-        entity.setProvider(model.getSiteName());
-        entity.setPrice(model.getPrice());
-        entity.setProvider(model.getBookUrl());
-        entity.setLastUpdated(LocalDateTime.now());
-        return entity;
+    public BookDetailsModel toModel(BookDetailsEntity entity) {
+        BookDetailsModel model = new BookDetailsModel();
+        model.setIsbn(entity.getIsbn());
+        model.setTitle(entity.getTitle());
+        model.setAuthor(entity.getAuthor());
+        model.setPublisher(entity.getPublisher());
+        model.setImageUrl(entity.getImageUrl());
+        return model;
     }
 }

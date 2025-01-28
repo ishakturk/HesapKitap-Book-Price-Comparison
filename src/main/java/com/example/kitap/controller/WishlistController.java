@@ -1,6 +1,7 @@
 package com.example.kitap.controller;
 
 import com.example.kitap.entity.CustomerEntity;
+import com.example.kitap.entity.WishlistEntity;
 import com.example.kitap.model.BookDetailsModel;
 import com.example.kitap.model.BookPriceModel;
 import com.example.kitap.model.BookRequest;
@@ -11,12 +12,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
-@RestController
+@Controller
 @RequestMapping("/wishlist")
 @PreAuthorize("hasRole('USER')")
 public class WishlistController {
@@ -30,10 +35,25 @@ public class WishlistController {
         this.customerService = customerService;
     }
 
+    @GetMapping
+    public String getWishlist(Principal principal, Model model) {
+        CustomerEntity customer = customerService.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı"));
+
+        List<BookDetailsModel> wishlistBooks = wishlistService.getWishlistBooksForUser(customer.getId());
+        model.addAttribute("bookDetails", wishlistBooks != null ? wishlistBooks : Collections.emptyList());
+
+        return "wishlist";
+    }
+
+
     @PostMapping("/add")
+    @ResponseBody
     public ResponseEntity<?> addBookToWishlist(
             Principal principal,
-            @ModelAttribute BookRequest bookRequest) { // ModelAttribute ile tüm alanları tek seferde al
+            @ModelAttribute BookRequest bookRequest) {
+
+        // ModelAttribute ile tüm alanları tek seferde al
 
         try {
             // 1. Kullanıcıyı bul
@@ -55,11 +75,20 @@ public class WishlistController {
             // 4. Wishlist'e ekleme işlemi
             wishlistService.addToWishlistWithPrices(customer.getId(), bookModel, priceModels);
 
-            return ResponseEntity.ok("Kitap ve fiyat bilgileri başarıyla eklendi!");
 
-        } catch (Exception e) {
+            return ResponseEntity.ok().body(Map.of(
+                "status", "success",
+                "message", "Kitap ve fiyat bilgileri başarıyla eklendi!"
+        ));
+    }catch (Exception e) {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body("Hata: " + e.getMessage());
         }
+    }
+
+    @PostMapping("/remove/{id}")
+    public String removeFromWishlist(@PathVariable Long id) {
+        wishlistService.removeFromWishlist(id);
+        return "redirect:/wishlist?removed=true";
     }
 }

@@ -20,5 +20,13 @@ public interface WishlistRepository extends JpaRepository<WishlistEntity, Long> 
     void deleteByCustomerIdAndBookIsbn(@Param("customerId") Long customerId, @Param("isbn") String isbn);
 
     boolean existsByCustomerAndBook(CustomerEntity customer, BookDetailsEntity book);
+
+    List<WishlistEntity> findByCustomer(CustomerEntity customer);
+
+    @Query("SELECT w FROM WishlistEntity w " +
+            "JOIN FETCH w.book b " +
+            "JOIN FETCH b.prices " +
+            "WHERE w.customer.id = :customerId")
+    List<WishlistEntity> findByCustomerIdWithDetails(@Param("customerId") Long customerId);
 }
 

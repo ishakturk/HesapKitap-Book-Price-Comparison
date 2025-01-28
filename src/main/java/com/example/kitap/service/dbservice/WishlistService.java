@@ -17,9 +17,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
-
-import org.springframework.util.Assert;
+import java.util.stream.Collectors;
 
 @Service
 public class WishlistService {
@@ -42,7 +40,6 @@ public class WishlistService {
         this.customerRepo = customerRepo;
     }
 
-    // WishlistService.java
     @Transactional
     public void addToWishlistWithPrices(Long customerId, BookDetailsModel bookModel, List<BookPriceModel> priceModels) {
         // 1. Müşteriyi bul
@@ -59,7 +56,7 @@ public class WishlistService {
         // 3. Fiyatları kaydet
         priceModels.forEach(priceModel -> {
             BookPriceEntity priceEntity = new BookPriceEntity();
-            priceEntity.setProvider(priceModel.getSiteName());
+            priceEntity.setSiteName(priceModel.getSiteName());
             priceEntity.setPrice(priceModel.getPrice());
             priceEntity.setProvider(priceModel.getBookUrl());
             priceEntity.setBook(bookEntity); // ISBN ilişkisi
@@ -74,5 +71,33 @@ public class WishlistService {
             wishlist.setBook(bookEntity);
             wishlistRepo.save(wishlist);
         }
+    }
+
+    public List<WishlistEntity> getWishlistByCustomer(CustomerEntity customer) {
+        return wishlistRepo.findByCustomer(customer);
+    }
+
+    public void removeFromWishlist(Long wishlistItemId) {
+        wishlistRepo.deleteById(wishlistItemId);
+    }
+
+    public List<BookDetailsModel> getWishlistBooksForUser(Long customerId) {
+        List<WishlistEntity> wishlistItems = wishlistRepo.findByCustomerIdWithDetails(customerId);
+
+        return wishlistItems.stream().map(item -> {
+            BookDetailsModel model = converter.toModel(item.getBook());
+
+            // Fiyat bilgilerini entity'den modele dönüştür
+            List<BookPriceModel> priceModels = item.getBook().getPrices().stream()
+                    .map(price -> new BookPriceModel(
+                            price.getSiteName(),
+                            price.getPrice(),
+                            price.getProvider()
+                    ))
+                    .collect(Collectors.toList());
+
+            model.setPrices(priceModels);
+            return model;
+        }).collect(Collectors.toList());
     }
 }
