@@ -178,3 +178,77 @@ body {
     border-radius: 15px;
     box-shadow: 0 5px 15px rgba(0, 0, 0, 0.08);
 }
+
+.scrolling-row {
+    overflow-x: auto;
+    white-space: nowrap;
+    padding-bottom: 1rem;
+    animation: scroll 40s linear infinite;
+}
+
+.book-card-scroll {
+    display: inline-block;
+    width: 200px;
+    margin-right: 1rem;
+    transition: transform 0.3s;
+}
+
+.book-card-scroll:hover {
+    transform: translateY(-5px);
+}
+
+.book-card {
+    display: inline-block;
+    width: 200px;
+    margin-right: 1.5rem;
+    vertical-align: top;
+    transition: transform 0.3s ease;
+}
+
+.book-card:hover {
+    transform: translateY(-5px);
+}
+
+.card {
+    border: none;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+}
+
+.card-body {
+    padding: 1rem;
+    min-height: 100px; /* Fixed height for text container */
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+}
+
+.text-truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* Pause animation on hover */
+.scrolling-wrapper:hover .scrolling-content {
+    animation-play-state: paused;
+}
+
+.scrolling-wrapper {
+    overflow: hidden;
+    position: relative;
+}
+
+.scrolling-content {
+    display: inline-block;
+    white-space: nowrap;
+    animation: scroll 40s linear infinite;
+    padding-right: 50%; /* Maintain spacing between loops */
+}
+
+@keyframes scroll {
+    0% { transform: translateX(0); }
+    100% { transform: translateX(-50%); }
+}
+
+

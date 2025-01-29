@@ -12,7 +12,6 @@
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
-<!-- Navigation Bar -->
 <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: var(--primary-color);">
     <div class="container">
         <a class="navbar-brand" href="/">📚 HesapKitap</a>
@@ -64,7 +63,55 @@
     </div>
 </div>
 
-<!-- Özellikler Bölümü -->
+<!-- Trending Books -->
+<div class="container mt-5">
+    <h3 class="mb-4">Trend Kitaplar</h3>
+    <div class="scrolling-wrapper">
+        <div class="scrolling-content">
+            <!-- Duplicated content for seamless loop -->
+            <th:block th:each="i : ${#numbers.sequence(1, 2)}">
+                <div th:each="book : ${trendingBooks}" class="book-card">
+                    <a th:href="@{/books/details/{isbn}(isbn=${book.isbn})}" class="text-decoration-none text-dark">
+                        <div class="card h-100">
+                            <img th:src="${book.imageUrl}" class="card-img-top"
+                                 style="height: 200px; object-fit: cover;"
+                                 onerror="this.src='https://via.placeholder.com/150x200?text=Kitap'">
+                            <div class="card-body">
+                                <h6 class="card-title text-truncate" th:text="${book.title}"></h6>
+                                <p class="card-text text-muted small text-truncate" th:text="${book.author}"></p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</div>
+
+<!-- Random Books -->
+<div class="container mt-5">
+    <h3 class="mb-4">Keşfet</h3>
+    <div class="scrolling-wrapper">
+        <div class="scrolling-content">
+            <th:block th:each="i : ${#numbers.sequence(1, 2)}">
+                <div th:each="book : ${randomBooks}" class="book-card">
+                    <a th:href="@{/books/details/{isbn}(isbn=${book.isbn})}" class="text-decoration-none text-dark">
+                        <div class="card h-100">
+                            <img th:src="${book.imageUrl}" class="card-img-top"
+                                style="height: 200px; object-fit: cover;"
+                                onerror="this.src='https://via.placeholder.com/150x200?text=Kitap'">
+                            <div class="card-body">
+                                <h6 class="card-title text-truncate" th:text="${book.title}"></h6>
+                                <p class="card-text text-muted small text-truncate" th:text="${book.author}"></p>
+                            </div>
+                        </div>
+                    </a>
+                </div>
+            </th:block>
+        </div>
+    </div>
+</div>
+
 <div class="features-section" th:if="${bookDetails == null}">
     <div class="container">
         <div class="row">
@@ -84,78 +131,6 @@
                 <p>%100 güvenli ödeme sistemleri</p>
             </div>
         </div>
-    </div>
-</div>
-
-<!-- Kitap Sonuçları -->
-<div class="container">
-    <div class="row" th:if="${bookDetails != null && !bookDetails.isEmpty()}">
-        <div class="col-md-4 mb-4" th:each="book : ${bookDetails}">
-            <div class="book-card card">
-                <!-- Savings Badge -->
-                <div class="savings-badge" th:if="${book.prices != null and book.prices.size() gt 1}">
-                    <span th:text="${'%' + #numbers.formatDecimal(((book.prices[0].price - book.prices[1].price) / book.prices[0].price) * 100, 0, 0) + ' İndirim'}"></span>
-                </div>
-
-                <!-- Book Image -->
-                <img th:src="${book.imageUrl}" class="card-img-top book-image"
-                     alt="Kitap Kapağı" onerror="this.src='https://via.placeholder.com/300x400?text=Kitap+Kapağı'">
-
-                <!-- Card Body -->
-                <div class="card-body">
-                    <!-- Star Button -->
-                    <form th:action="@{/wishlist/add}" method="post">
-                        <!-- Kitap Bilgileri -->
-                        <input type="hidden" name="isbn" th:value="${book.isbn}">
-                        <input type="hidden" name="title" th:value="${book.title}">
-                        <input type="hidden" name="author" th:value="${book.author}">
-                        <input type="hidden" name="publisher" th:value="${book.publisher}">
-                        <input type="hidden" name="imageUrl" th:value="${book.imageUrl}">
-
-                        <!-- Fiyat Bilgileri -->
-                        <div th:each="price, iter : ${book.prices}">
-                            <input type="hidden" th:name="|prices[${iter.index}].siteName|" th:value="${price.siteName}">
-                            <input type="hidden" th:name="|prices[${iter.index}].price|" th:value="${price.price}">
-                            <input type="hidden" th:name="|prices[${iter.index}].bookUrl|" th:value="${price.bookUrl}">
-                        </div>
-
-                        <button type="submit" class="btn btn-outline-warning btn-sm">
-                            <i class="fas fa-star"></i> Favorilere Ekle
-                        </button>
-                    </form>
-
-
-                    <!-- Book Details -->
-                    <h5 class="card-title" th:text="${book.title}"></h5>
-                    <p class="card-text">
-                        <i class="fas fa-user me-2"></i>
-                        <span th:text="${book.author}"></span>
-                    </p>
-                    <p class="card-text">
-                        <i class="fas fa-building me-2"></i>
-                        <span th:text="${book.publisher}"></span>
-                    </p>
-
-                    <!-- Prices -->
-                    <div class="prices mt-3">
-                        <div th:each="price : ${book.prices}">
-                            <a th:href="${price.bookUrl}" target="_blank" style="text-decoration: none;">
-                                <span class="price-tag d-inline-block p-2 mb-2 me-2 bg-light border rounded shadow-sm">
-                                    <i class="fas fa-store me-2"></i>
-                                    <span th:text="${price.siteName + ': ' + price.price + ' TL'}"></span>
-                                </span>
-                            </a>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <div class="no-results" th:if="${bookDetails != null && bookDetails.isEmpty()}">
-        <i class="fas fa-search fa-3x mb-3 text-muted"></i>
-        <h3>Üzgünüz, aradığınız kitap bulunamadı.</h3>
-        <p class="text-muted">Lütfen farklı anahtar kelimeler ile tekrar deneyin.</p>
     </div>
 </div>
 
