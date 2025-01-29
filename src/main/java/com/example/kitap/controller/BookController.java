@@ -1,12 +1,21 @@
 package com.example.kitap.controller;
 
+import com.example.kitap.entity.BookDetailsEntity;
+import com.example.kitap.entity.BookPriceEntity;
 import com.example.kitap.model.BookDetailsModel;
+import com.example.kitap.model.BookPriceModel;
+import com.example.kitap.repository.BookDetailsRepository;
+import com.example.kitap.repository.BookPriceRepository;
+import com.example.kitap.service.BookConverterService;
+import com.example.kitap.service.dbservice.BookService;
 import com.example.kitap.service.scrapers.PriceComparatorService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Controller
@@ -14,26 +23,34 @@ import java.util.List;
 public class BookController {
 
     private final PriceComparatorService priceComparatorService;
+    private final BookService bookService;
+    private final BookDetailsRepository bookDetailsRepo;
+    private final BookPriceRepository bookPriceRepo;
+    private final BookConverterService bookConverterService;
 
     @Autowired
-    public BookController(PriceComparatorService priceComparatorService) {
+    public BookController(PriceComparatorService priceComparatorService,
+                          BookService bookService,
+                          BookDetailsRepository bookDetailsRepo,
+                          BookPriceRepository bookPriceRepo,
+                          BookConverterService bookConverterService) {
         this.priceComparatorService = priceComparatorService;
+        this.bookService = bookService;
+        this.bookDetailsRepo = bookDetailsRepo;
+        this.bookPriceRepo = bookPriceRepo;
+        this.bookConverterService = bookConverterService;
     }
 
-    // Ana sayfayı göstermek için GET mapping
-    @GetMapping("/search")
-    public String showSearchPage() {
-        return "search";
-    }
-
-    // Arama işlemi için POST mapping
     @PostMapping("/search")
-    public String searchBooks(@RequestParam("searchQuery") String searchQuery, Model model) {
-        List<BookDetailsModel> bookDetails = priceComparatorService.fetchAndSortPricesBySearchQuery(searchQuery);
+    public String handleSearch(@RequestParam("searchQuery") String searchQuery,
+                               RedirectAttributes redirectAttributes) {
+        redirectAttributes.addAttribute("query", searchQuery);
+        return "redirect:/books/results";
+    }
 
-        if (bookDetails.isEmpty()) {
-            model.addAttribute("message", "No books found for '" + searchQuery + "'.");
-        }
+    @GetMapping("/results")
+    public String showResults(@RequestParam("query") String searchQuery, Model model) {
+        List<BookDetailsModel> bookDetails = priceComparatorService.fetchAndSortPricesBySearchQuery(searchQuery);
         model.addAttribute("bookDetails", bookDetails);
         model.addAttribute("searchQuery", searchQuery);
         return "search-results";
