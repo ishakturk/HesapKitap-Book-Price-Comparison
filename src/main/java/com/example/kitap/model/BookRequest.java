@@ -2,7 +2,6 @@ package com.example.kitap.model;
 
 import java.util.List;
 
-// BookRequest.java (Yeni DTO sınıfı)
 public class BookRequest {
     private String isbn;
     private String title;
