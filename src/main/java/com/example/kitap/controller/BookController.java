@@ -35,6 +35,17 @@ public class BookController {
             model.addAttribute("message", "No books found for '" + searchQuery + "'.");
         }
         model.addAttribute("bookDetails", bookDetails);
+        model.addAttribute("searchQuery", searchQuery);
+        return "search-results";
+    }
+
+    @GetMapping()
+    public String showHomePage(Model model) {
+        model.addAttribute("trendingBooks", bookService.getTrendingBooks());
+        model.addAttribute("randomBooks", bookService.getRandomBooks());
+        return "home";
+    }
+
     @GetMapping("/details/{isbn}")
     public String showBookDetails(@PathVariable String isbn, Model model) {
         // Fetch or create book
