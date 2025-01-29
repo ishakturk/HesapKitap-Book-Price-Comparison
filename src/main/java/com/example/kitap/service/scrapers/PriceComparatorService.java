@@ -74,7 +74,7 @@ public class PriceComparatorService {
         return bookDetailsList;
     }
 
-    private List<BookPriceModel> fetchPricesFromAllSites(String isbn) {
+    public List<BookPriceModel> fetchPricesFromAllSites(String isbn) {
         List<BookPriceModel> allPrices = new ArrayList<>();
 
         // Thread pool for parallel price fetching

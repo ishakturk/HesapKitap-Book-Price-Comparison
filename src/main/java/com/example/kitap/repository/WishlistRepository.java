@@ -10,7 +10,6 @@ import org.springframework.data.repository.query.Param;
 import org.springframework.stereotype.Repository;
 
 import java.util.List;
-import java.util.Optional;
 
 @Repository
 public interface WishlistRepository extends JpaRepository<WishlistEntity, Long> {
@@ -28,5 +27,8 @@ public interface WishlistRepository extends JpaRepository<WishlistEntity, Long> 
             "JOIN FETCH b.prices " +
             "WHERE w.customer.id = :customerId")
     List<WishlistEntity> findByCustomerIdWithDetails(@Param("customerId") Long customerId);
+
+    @Query("SELECT w.book, COUNT(w) as wishlistCount FROM WishlistEntity w GROUP BY w.book ORDER BY wishlistCount DESC LIMIT 10")
+    List<Object[]> findTopTrendingBooks();
 }
 
