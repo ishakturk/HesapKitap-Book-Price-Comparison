@@ -1,7 +1,6 @@
 package com.example.kitap.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 
 import java.time.LocalDateTime;
 
@@ -26,11 +25,17 @@ public class BookPriceEntity {
     @Column(name = "last_updated", nullable = false)
     private LocalDateTime lastUpdated = LocalDateTime.now();
 
+    @Column(name = "is_latest", nullable = false)
+    private Boolean isLatest = false;
+
+    @Column(name = "is_cheapest", nullable = false)
+    private Boolean isCheapest = false;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "isbn", referencedColumnName = "isbn", nullable = false)
     private BookDetailsEntity book;
 
-    // Getters and Setters
+
     public Long getId() {
         return id;
     }
@@ -76,5 +81,21 @@ public class BookPriceEntity {
     }
     public void setSiteName(String siteName) {
         this.siteName = siteName;
+    }
+
+    public Boolean getIsLatest() {
+        return isLatest;
+    }
+
+    public void setIsLatest(Boolean latest) {
+        isLatest = latest;
+    }
+
+    public Boolean getIsCheapest() {
+        return isCheapest;
+    }
+
+    public void setIsCheapest(Boolean cheapest) {
+        isCheapest = cheapest;
     }
 }
