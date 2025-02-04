@@ -11,11 +11,14 @@ import com.example.kitap.repository.BookPriceRepository;
 import com.example.kitap.repository.CustomerRepository;
 import com.example.kitap.repository.WishlistRepository;
 import com.example.kitap.service.BookConverterService;
+import com.example.kitap.service.scrapers.PriceComparatorService;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
+import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -26,18 +29,21 @@ public class WishlistService {
     private final BookPriceRepository bookPriceRepo;
     private final BookConverterService converter;
     private final CustomerRepository customerRepo;
+    private final PriceComparatorService priceComparatorService;
 
     @Autowired
     public WishlistService(BookDetailsRepository bookDetailsRepo,
                            WishlistRepository wishlistRepo,
                            BookPriceRepository bookPriceRepo,
                            BookConverterService converter,
-                           CustomerRepository customerRepo) {
+                           CustomerRepository customerRepo,
+                           PriceComparatorService priceComparatorService) {
         this.bookDetailsRepo = bookDetailsRepo;
         this.wishlistRepo = wishlistRepo;
         this.bookPriceRepo = bookPriceRepo;
         this.converter = converter;
         this.customerRepo = customerRepo;
+        this.priceComparatorService = priceComparatorService;
     }
 
     @Transactional
@@ -77,8 +83,9 @@ public class WishlistService {
         return wishlistRepo.findByCustomer(customer);
     }
 
-    public void removeFromWishlist(Long wishlistItemId) {
-        wishlistRepo.deleteById(wishlistItemId);
+    @Transactional
+    public void removeFromWishlist(Long id, String isbn) {
+        wishlistRepo.deleteByCustomerIdAndBookIsbn(id, isbn);
     }
 
     public List<BookDetailsModel> getWishlistBooksForUser(Long customerId) {
@@ -87,17 +94,53 @@ public class WishlistService {
         return wishlistItems.stream().map(item -> {
             BookDetailsModel model = converter.toModel(item.getBook());
 
-            // Fiyat bilgilerini entity'den modele dönüştür
-            List<BookPriceModel> priceModels = item.getBook().getPrices().stream()
+            // Get only latest prices
+            List<BookPriceModel> priceModels = bookPriceRepo
+                    .findLatestByIsbn(item.getBook().getIsbn()).stream()
                     .map(price -> new BookPriceModel(
                             price.getSiteName(),
                             price.getPrice(),
-                            price.getProvider()
+                            price.getProvider(),
+                            price.getIsCheapest()
                     ))
                     .collect(Collectors.toList());
 
             model.setPrices(priceModels);
             return model;
         }).collect(Collectors.toList());
+    }
+
+    @Transactional
+    public void updateAllPricesForCustomer(Long customerId) {
+        List<WishlistEntity> wishlistItems = wishlistRepo.findByCustomerIdWithDetails(customerId);
+
+        wishlistItems.forEach(item -> {
+            String isbn = item.getBook().getIsbn();
+            List<BookPriceModel> newPrices = priceComparatorService.fetchPricesFromAllSites(isbn);
+
+            // Mark all existing prices as not latest
+            bookPriceRepo.markAllAsNotLatest(isbn);
+
+            // Save new prices with latest flag
+            List<BookPriceEntity> savedPrices = new ArrayList<>();
+            newPrices.forEach(priceModel -> {
+                BookPriceEntity priceEntity = new BookPriceEntity();
+                priceEntity.setBook(item.getBook());
+                priceEntity.setSiteName(priceModel.getSiteName());
+                priceEntity.setPrice(priceModel.getPrice());
+                priceEntity.setProvider(priceModel.getBookUrl());
+                priceEntity.setLastUpdated(LocalDateTime.now());
+                priceEntity.setIsLatest(true);
+                savedPrices.add(bookPriceRepo.save(priceEntity));
+            });
+
+            // Find and mark cheapest price
+            savedPrices.stream()
+                    .min(Comparator.comparingDouble(BookPriceEntity::getPrice))
+                    .ifPresent(cheapest -> {
+                        cheapest.setIsCheapest(true);
+                        bookPriceRepo.save(cheapest);
+                    });
+        });
     }
 }

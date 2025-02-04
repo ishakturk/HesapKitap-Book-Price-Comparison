@@ -15,8 +15,8 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/books")
@@ -65,29 +65,32 @@ public class BookController {
 
     @GetMapping("/details/{isbn}")
     public String showBookDetails(@PathVariable String isbn, Model model) {
-        // Fetch or create book
+        // Fetch existing book or throw error
         BookDetailsEntity bookEntity = bookDetailsRepo.findByIsbn(isbn)
-                .orElseThrow(() -> new RuntimeException("Book with ISBN " + isbn + " not found in the database."));
+                .orElseThrow(() -> new RuntimeException("Book not found"));
 
-        // Fetch latest prices
-        List<BookPriceModel> newPrices = priceComparatorService.fetchPricesFromAllSites(isbn);
+        // Get the latest prices from the database
+        List<BookPriceEntity> priceEntities = bookPriceRepo.findLatestByIsbn(isbn);
+        List<BookPriceModel> prices = priceEntities.stream()
+                .map(bookConverterService::toPriceModel)
+                .collect(Collectors.toList());
 
-        // Save new prices
-        newPrices.forEach(price -> {
-            BookPriceEntity priceEntity = new BookPriceEntity();
-            priceEntity.setBook(bookEntity);
-            priceEntity.setPrice(price.getPrice());
-            priceEntity.setSiteName(price.getSiteName());
-            priceEntity.setProvider(price.getBookUrl());
-            priceEntity.setLastUpdated(LocalDateTime.now());
-            bookPriceRepo.save(priceEntity);
-        });
+        // Get price history for chart
+        List<BookPriceModel> priceHistory = bookService.getCheapestPriceHistory(isbn);
 
         // Prepare model
         BookDetailsModel bookModel = bookConverterService.toModel(bookEntity);
-        bookModel.setPrices(newPrices);
+        bookModel.setPrices(prices);
         model.addAttribute("book", bookModel);
+        model.addAttribute("priceHistory", priceHistory); // Add chart data
 
         return "book-detail";
     }
+
+    @PostMapping("/details/{isbn}/refresh")
+    public String refreshBookDetails(@PathVariable String isbn) {
+        bookService.refreshBookDetails(isbn);
+        return "redirect:/books/details/" + isbn;
+    }
+
 }

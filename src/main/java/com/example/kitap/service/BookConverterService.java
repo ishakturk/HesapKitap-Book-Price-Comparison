@@ -31,4 +31,18 @@ public class BookConverterService {
         model.setImageUrl(entity.getImageUrl());
         return model;
     }
+
+    public BookPriceModel toPriceModel(BookPriceEntity entity) {
+        BookPriceModel model = new BookPriceModel();
+        model.setPrice(entity.getPrice());
+        model.setSiteName(entity.getSiteName());
+        model.setBookUrl(entity.getProvider());
+        return model;
+    }
+
+    public BookPriceModel toPriceModelWithDate(BookPriceEntity entity) {
+        BookPriceModel model = toPriceModel(entity);
+        model.setDate(entity.getLastUpdated());
+        return model;
+    }
 }

@@ -74,6 +74,39 @@ public class PriceComparatorService {
         return bookDetailsList;
     }
 
+    // Overloaded method for single ISBN search
+    public BookDetailsModel fetchBookDetailsByIsbn(String isbn) {
+        // Get basic info from KitapSec (title, author, etc.)
+        List<String[]> searchResults = ((KitapSecService) priceProviders.stream()
+                .filter(provider -> provider instanceof KitapSecService)
+                .findFirst()
+                .orElseThrow(() -> new IllegalStateException("KitapSecService not found")))
+                .fetchSearchResults(isbn);  // ISBN-based search
+
+        if (searchResults.isEmpty()) {
+            return null;
+        }
+
+        String[] result = searchResults.get(0);
+        String title = result[0];
+        String author = result[1];
+        String publisher = result[2];
+        String imageUrl = result[5];
+
+        // Fetch prices from ALL providers (not just KitapSec)
+        List<BookPriceModel> prices = fetchPricesFromAllSites(isbn);
+
+        return new BookDetailsModel(
+                title,
+                author,
+                publisher,
+                prices,
+                imageUrl,
+                isbn
+        );
+    }
+
+
     public List<BookPriceModel> fetchPricesFromAllSites(String isbn) {
         List<BookPriceModel> allPrices = new ArrayList<>();
 

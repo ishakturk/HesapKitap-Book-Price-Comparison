@@ -53,14 +53,17 @@
     <div class="row" th:if="${not #lists.isEmpty(bookDetails)}">
         <div class="col-md-4 mb-4" th:each="book : ${bookDetails}">
             <div class="book-card card">
-                <!-- Savings Badge -->
-                <div class="savings-badge" th:if="${book.prices != null and book.prices.size() gt 1}">
-                    <span th:text="${'%' + #numbers.formatDecimal(((book.prices[0].price - book.prices[1].price) / book.prices[0].price) * 100, 0, 0) + ' İndirim'}"></span>
+                <!-- Replace anchor tags with a div + JavaScript -->
+                <div class="text-center book-link" th:attr="onclick='refreshAndViewBook(\'' + ${book.isbn} + '\')'">
+                <img th:src="${book.imageUrl}" class="card-img-top book-image"
+                         alt="Kitap Kapağı"
+                         onerror="this.src='https://via.placeholder.com/300x400?text=Kitap+Kapağı'">
                 </div>
 
-                <!-- Book Image -->
-                <img th:src="${book.imageUrl}" class="card-img-top book-image"
-                     alt="Kitap Kapağı" onerror="this.src='https://via.placeholder.com/300x400?text=Kitap+Kapağı'">
+                <!-- Unique hidden form for POST -->
+                <form th:id="|refreshForm_${book.isbn}|" method="post">
+                    <input type="hidden" name="_csrf" th:value="${_csrf.token}" />
+                </form>
 
                 <!-- Card Body -->
                 <div class="card-body">
@@ -98,10 +101,10 @@
                     <div class="prices mt-3">
                         <div th:each="price : ${book.prices}">
                             <a th:href="${price.bookUrl}" target="_blank" style="text-decoration: none;">
-                                <span class="price-tag d-inline-block p-2 mb-2 me-2 bg-light border rounded shadow-sm">
-                                    <i class="fas fa-store me-2"></i>
-                                    <span th:text="${price.siteName + ': ' + price.price + ' TL'}"></span>
-                                </span>
+                            <span class="price-tag d-inline-block p-2 mb-2 me-2 bg-light border rounded shadow-sm">
+                                <i class="fas fa-store me-2"></i>
+                                <span th:text="${price.siteName + ': ' + price.price + ' TL'}"></span>
+                            </span>
                             </a>
                         </div>
                     </div>
@@ -118,6 +121,42 @@
     </div>
 </div>
 
+<script>
+    async function refreshAndViewBook(isbn) {
+        try {
+            const form = document.getElementById(`refreshForm_${isbn}`);
+            if (!form) {
+                alert("İşlem yapılamadı. Lütfen sayfayı yenileyin.");
+                return;
+            }
+
+            // CSRF token'ı doğru şekilde al
+            const csrfToken = form.querySelector("[name='_csrf']").value;
+
+            // POST isteğini fetch ile gönder
+            const response = await fetch(`/books/details/${isbn}/refresh`, {
+                method: "POST",
+                headers: {
+                    "X-CSRF-TOKEN": csrfToken, // Spring'in beklediği header
+                    "Content-Type": "application/x-www-form-urlencoded"
+                },
+                credentials: "include" // Cookie'leri dahil et
+            });
+
+            // Yönlendirme kontrolü
+            if (response.redirected) {
+                window.location.href = response.url;
+            } else if (response.ok) {
+                window.location.href = `/books/details/${isbn}`;
+            } else {
+                throw new Error(`HTTP Hatası: ${response.status}`);
+            }
+        } catch (error) {
+            console.error("Hata:", error);
+            alert("Bilgiler yenilenirken hata oluştu. Lütfen tekrar deneyin.");
+        }
+    }
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>
