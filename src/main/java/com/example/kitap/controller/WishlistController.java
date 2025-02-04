@@ -1,7 +1,6 @@
 package com.example.kitap.controller;
 
 import com.example.kitap.entity.CustomerEntity;
-import com.example.kitap.entity.WishlistEntity;
 import com.example.kitap.model.BookDetailsModel;
 import com.example.kitap.model.BookPriceModel;
 import com.example.kitap.model.BookRequest;
@@ -86,9 +85,22 @@ public class WishlistController {
         }
     }
 
-    @PostMapping("/remove/{id}")
-    public String removeFromWishlist(@PathVariable Long id) {
-        wishlistService.removeFromWishlist(id);
+    @PostMapping("/remove/{isbn}")  // Renamed for clarity
+    public String removeFromWishlist(Principal principal, @PathVariable("isbn") String isbn) {
+        String username = principal.getName();
+        CustomerEntity customer = customerService.findByEmail(username)
+                .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı: " + username));
+
+        wishlistService.removeFromWishlist(customer.getId(),isbn);
         return "redirect:/wishlist?removed=true";
+    }
+
+    @PostMapping("/update-prices")
+    public String updateWishlistPrices(Principal principal) {
+        CustomerEntity customer = customerService.findByEmail(principal.getName())
+                .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı"));
+
+        wishlistService.updateAllPricesForCustomer(customer.getId());
+        return "redirect:/wishlist?updated=true";
     }
 }
