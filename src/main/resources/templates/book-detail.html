@@ -48,17 +48,22 @@
 
 <div class="container mt-5">
     <div class="row">
+        <!-- Left Column - Book Image -->
         <div class="col-md-4">
             <img th:src="${book.imageUrl}" class="img-fluid rounded shadow"
                  onerror="this.src='https://via.placeholder.com/300x400?text=Kitap'">
         </div>
+
+        <!-- Right Column - Prices and Chart -->
         <div class="col-md-8">
+            <!-- Book Details -->
             <h1 th:text="${book.title}"></h1>
             <p class="lead" th:text="${book.author}"></p>
             <p th:text="${book.publisher}"></p>
 
+            <!-- Current Prices Section -->
             <div class="mt-4">
-                <h4>Fiyatlar</h4>
+                <h4>Güncel Fiyatlar</h4>
                 <div th:each="price : ${book.prices}" class="mb-2">
                     <a th:href="${price.bookUrl}" target="_blank" class="btn btn-outline-primary">
                         <i class="fas fa-external-link-alt"></i>
@@ -66,11 +71,95 @@
                     </a>
                 </div>
             </div>
+
+            <!-- Price Chart Section -->
+            <div class="mt-4">
+                <div class="card shadow">
+                    <div class="card-body">
+                        <h5 class="card-title">Son 1 Yılın Fiyat Değişimi</h5>
+                        <canvas id="priceChart"></canvas>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 </div>
+<script th:inline="javascript">
+    /*<![CDATA[*/
+    // Proper Thymeleaf JSON serialization
+    const priceData = /*[[${priceHistory}]]*/ [];
 
+    // Format dates for Chart.js
+    const formattedData = priceData.map(entry => ({
+        x: new Date(entry.date[0], entry.date[1]-1, entry.date[2]), // Handle LocalDateTime array
+        y: entry.price
+    }));
+
+    // Initialize chart AFTER DOM elements exist
+    document.addEventListener('DOMContentLoaded', function() {
+        const ctx = document.getElementById('priceChart').getContext('2d');
+        new Chart(ctx, {
+            type: 'line',
+            data: {
+                datasets: [{
+                    label: 'En Ucuz Fiyat',
+                    data: formattedData,
+                    borderColor: '#4e73df',
+                    backgroundColor: '#4e73df',
+                    tension: 0.1,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                scales: {
+                    x: {
+                        type: 'time',
+                        time: {
+                            unit: 'month',
+                            tooltipFormat: 'dd MMM yyyy',
+                            displayFormats: {
+                                month: 'MMM yyyy'
+                            }
+                        },
+                        title: {
+                            display: true,
+                            text: 'Tarih'
+                        }
+                    },
+                    y: {
+                        title: {
+                            display: true,
+                            text: 'Fiyat (TL)'
+                        },
+                        ticks: {
+                            callback: function(value) {
+                                return value.toFixed(2) + ' TL';
+                            }
+                        }
+                    }
+                },
+                plugins: {
+                    tooltip: {
+                        callbacks: {
+                            title: (context) =>
+                                context[0].raw.x.toLocaleDateString('tr-TR', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric'
+                                }),
+                            label: (context) =>
+                                `${context.parsed.y.toFixed(2)} TL`
+                        }
+                    }
+                }
+            }
+        });
+    });
+    /*]]>*/
+</script>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-adapter-date-fns"></script>
 </body>
 </html>
