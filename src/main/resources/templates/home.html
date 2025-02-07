@@ -158,10 +158,10 @@
                 return;
             }
 
-            // CSRF token'ı doğru şekilde al
+            // Get the CSRF token correctly
             const csrfToken = form.querySelector("[name='_csrf']").value;
 
-            // POST isteğini fetch ile gönder
+            // Send POST request with fetch
             const response = await fetch(`/books/details/${isbn}/refresh`, {
                 method: "POST",
                 headers: {
@@ -171,7 +171,7 @@
                 credentials: "include" // Cookie'leri dahil et
             });
 
-            // Yönlendirme kontrolü
+            // Routing control
             if (response.redirected) {
                 window.location.href = response.url;
             } else if (response.ok) {

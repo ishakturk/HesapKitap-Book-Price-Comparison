@@ -2,7 +2,6 @@ package com.example.kitap.repository;
 
 import com.example.kitap.entity.CustomerEntity;
 import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.stereotype.Repository;
 
@@ -16,8 +15,5 @@ public interface CustomerRepository extends JpaRepository<CustomerEntity, Long> 
     @Query("SELECT c FROM CustomerEntity c WHERE c.email = :email")
     CustomerEntity findByEmailCustom(String email);
 
-    @Modifying
-    @Query("UPDATE CustomerEntity c SET c.password = :password WHERE c.email = :email")
-    void updateCustomerInfo(String email, String name, String password);
 }
 

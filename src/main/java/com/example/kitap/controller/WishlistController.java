@@ -52,15 +52,15 @@ public class WishlistController {
             Principal principal,
             @ModelAttribute BookRequest bookRequest) {
 
-        // ModelAttribute ile tüm alanları tek seferde al
+        // Get all fields at once with ModelAttribute
 
         try {
-            // 1. Kullanıcıyı bul
+            // 1. Find user
             String username = principal.getName();
             CustomerEntity customer = customerService.findByEmail(username)
                     .orElseThrow(() -> new UsernameNotFoundException("Kullanıcı bulunamadı: " + username));
 
-            // 2. Kitap modelini oluştur
+            // 2. Create the book model
             BookDetailsModel bookModel = new BookDetailsModel();
             bookModel.setIsbn(bookRequest.getIsbn());
             bookModel.setTitle(bookRequest.getTitle());
@@ -68,10 +68,10 @@ public class WishlistController {
             bookModel.setPublisher(bookRequest.getPublisher());
             bookModel.setImageUrl(bookRequest.getImageUrl());
 
-            // 3. Fiyat modellerini al
+            // 3. Get price models
             List<BookPriceModel> priceModels = bookRequest.getPrices();
 
-            // 4. Wishlist'e ekleme işlemi
+            // 4. Adding to Wishlist
             wishlistService.addToWishlistWithPrices(customer.getId(), bookModel, priceModels);
 
 
@@ -85,7 +85,7 @@ public class WishlistController {
         }
     }
 
-    @PostMapping("/remove/{isbn}")  // Renamed for clarity
+    @PostMapping("/remove/{isbn}")
     public String removeFromWishlist(Principal principal, @PathVariable("isbn") String isbn) {
         String username = principal.getName();
         CustomerEntity customer = customerService.findByEmail(username)

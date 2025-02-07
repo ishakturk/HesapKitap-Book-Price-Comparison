@@ -39,8 +39,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public String registerUser(@ModelAttribute CustomerEntity customer,
-                               BindingResult result,
-                               Model model) {
+                               BindingResult result) {
         try {
             if (customer.getEmail() == null || customer.getEmail().trim().isEmpty()) {
                 result.rejectValue("email", "error.email", "Email gereklidir");
