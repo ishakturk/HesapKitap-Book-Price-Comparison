@@ -46,6 +46,16 @@
     </div>
 </nav>
 
+<div class="search-container">
+    <form th:action="@{/books/search}" method="post" class="d-flex gap-2" accept-charset="UTF-8">
+        <input type="text" name="searchQuery" class="form-control search-input"
+               placeholder="Kitap adı, yazar veya ISBN ile arama yapın..." required>
+        <button type="submit" class="btn search-button">
+            <i class="fas fa-search me-2"></i>Ara
+        </button>
+    </form>
+</div>
+
 <div class="container mt-5">
     <h2 class="mb-4">Arama Sonuçları: "<span th:text="${searchQuery}"></span>"</h2>
 
