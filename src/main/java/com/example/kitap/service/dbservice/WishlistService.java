@@ -48,18 +48,18 @@ public class WishlistService {
 
     @Transactional
     public void addToWishlistWithPrices(Long customerId, BookDetailsModel bookModel, List<BookPriceModel> priceModels) {
-        // 1. Müşteriyi bul
+        // 1. Find the customer
         CustomerEntity customer = customerRepo.findById(customerId)
                 .orElseThrow(() -> new RuntimeException("Müşteri bulunamadı: " + customerId));
 
-        // 2. Kitap var mı kontrol et/Yeni oluştur
+        // 2. Check for books/Create new
         BookDetailsEntity bookEntity = bookDetailsRepo.findByIsbn(bookModel.getIsbn())
                 .orElseGet(() -> {
                     BookDetailsEntity newBook = converter.toEntity(bookModel);
                     return bookDetailsRepo.save(newBook);
                 });
 
-        // 3. Fiyatları kaydet
+        // 3. Save prices
         priceModels.forEach(priceModel -> {
             BookPriceEntity priceEntity = new BookPriceEntity();
             priceEntity.setSiteName(priceModel.getSiteName());
@@ -70,7 +70,7 @@ public class WishlistService {
             bookPriceRepo.save(priceEntity);
         });
 
-        // 4. Wishlist'e ekle (eğer yoksa)
+        // 4. Add to Wishlist (if you don't have one)
         if (!wishlistRepo.existsByCustomerAndBook(customer, bookEntity)) {
             WishlistEntity wishlist = new WishlistEntity();
             wishlist.setCustomer(customer);

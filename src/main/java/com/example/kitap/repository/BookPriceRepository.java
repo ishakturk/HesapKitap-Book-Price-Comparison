@@ -14,18 +14,11 @@ import java.util.List;
 public interface BookPriceRepository extends JpaRepository<BookPriceEntity, Long> {
 
     @Modifying
-    @Query("SELECT p FROM BookPriceEntity p WHERE p.book.isbn = :isbn")
-    List<BookPriceEntity> findByBookIsbn(@Param("isbn") String isbn);
-
-    @Modifying
     @Query("UPDATE BookPriceEntity p SET p.isLatest = false WHERE p.book.isbn = :isbn")
     void markAllAsNotLatest(String isbn);
 
     @Query("SELECT p FROM BookPriceEntity p WHERE p.book.isbn = :isbn AND p.isLatest = true")
     List<BookPriceEntity> findLatestByIsbn(@Param("isbn") String isbn);
-
-    @Query("SELECT p FROM BookPriceEntity p WHERE p.book.isbn = :isbn ORDER BY p.lastUpdated DESC")
-    List<BookPriceEntity> findLatestPricesByBook(@Param("isbn") String isbn);
 
     @Query(value = """
     SELECT * FROM (

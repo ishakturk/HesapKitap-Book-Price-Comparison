@@ -1,7 +1,6 @@
 package com.example.kitap.entity;
 
 import jakarta.persistence.*;
-import lombok.*;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -32,7 +31,6 @@ public class BookDetailsEntity {
     @OneToMany(mappedBy = "book", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<BookPriceEntity> prices = new ArrayList<>();
 
-    // Getters and Setters
     public String getIsbn() {
         return isbn;
     }
