@@ -213,16 +213,21 @@ body {
 .card {
     border: none;
     border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    width: 100%; /* Konteynere uyumlu olacak */
+    max-width: 800px; /* Daha geniş görünmesi için artırılabilir */
+    margin: auto; /* Ortalamak için */
 }
 
 .card-body {
     padding: 1rem;
-    min-height: 100px; /* Fixed height for text container */
+    min-height: 150px; /* İçeriğe göre büyüyebilir */
     display: flex;
     flex-direction: column;
     justify-content: space-between;
+    flex-grow: 1; /* Esnek büyüme sağlar */
 }
+
 
 .text-truncate {
     white-space: nowrap;

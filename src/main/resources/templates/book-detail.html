@@ -65,8 +65,9 @@
             <div class="mt-4">
                 <h4>Güncel Fiyatlar</h4>
                 <div th:each="price : ${book.prices}" class="mb-2">
-                    <a th:href="${price.bookUrl}" target="_blank" class="btn btn-outline-primary">
-                        <i class="fas fa-external-link-alt"></i>
+                    <a th:href="${price.bookUrl}" target="_blank" style="text-decoration: none;"
+                       class="price-tag d-inline-block p-2 mb-2 me-2 bg-light border rounded shadow-sm">
+                        <i class="fas fa-store me-2"></i>
                         <span th:text="${price.siteName + ': ' + price.price + ' TL'}"></span>
                     </a>
                 </div>
